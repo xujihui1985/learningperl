@@ -47,6 +47,10 @@ sub get_files {
 
     closedir(INPUTDIR);
 
+    #grep take 2 parameters, the first is the regex, and second is the array to filter
+    #and it return a new array
+    my greped_files = grep(//,@files);
+
     #return the reference of the files array
     \@files;
 }
