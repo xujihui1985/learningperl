@@ -16,8 +16,9 @@ use Getopt::Std;
 
 sub main {
     my %opts;
-    getopts('af:r', \%opts);
+    getopts('f:rd:', \%opts);
 
+    #get the reference of the opts hash
     my $opts_ref = \%opts;
 
     #use hash directly.
@@ -33,7 +34,10 @@ sub main {
     }
 
     my $input_dir = $opts{"d"};
+    my $files = get_files($input_dir);
+    print Dumper($files);
 
+    process_files($files, $input_dir);
 }
 
 sub get_files {
@@ -49,11 +53,34 @@ sub get_files {
 
     #grep take 2 parameters, the first is the regex, and second is the array to filter
     #and it return a new array
-    my greped_files = grep(//,@files);
+    #filter all the file that is surfixed by xml
+    my @greped_files = grep(/\.xml$/,@files);
 
     #return the reference of the files array
-    \@files;
+    \@greped_files;
 }
+
+=pod
+
+=cut
+sub process_files {
+    my ($files, $input_dir) = @_;
+
+    print Dumper($files);
+
+    # dereference $files array
+    for my $file(@$files) {
+        process_file($file, $input_dir);
+    }
+}
+
+sub process_file {
+    my ($file, $input_dir) = @_;
+
+    print "Processing $file in $input_dir...\n";
+}
+
+
 
 sub checkusage {
 
@@ -66,7 +93,7 @@ sub checkusage {
     my $r = $opts_ref->{'r'};
     my $f = $opts_ref->{'f'};
 
-    unless(defined($r) and defined($f)) {
+    unless(defined($r) or defined($f)) {
         return 0;
     }
 
