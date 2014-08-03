@@ -3,6 +3,8 @@
 use strict;
 use warnings;
 
+$|=1;
+
 use Data::Dumper;
 use Getopt::Std;
 
@@ -36,7 +38,6 @@ sub main {
     my $input_dir = $opts{"d"};
     my $files = get_files($input_dir);
     print Dumper($files);
-
     process_files($files, $input_dir);
 }
 
@@ -76,6 +77,24 @@ sub process_files {
 
 sub process_file {
     my ($file, $input_dir) = @_;
+    
+    my $filepath = "$input_dir/$file";
+
+    print $filepath."\n";
+
+    open(INPUTFILE, $filepath) || die("unable to open $filepath\n");
+    #this magic variable means seprate each chunk by </entry>;
+    $/ = "</html>";
+    my $count = 0;
+    while(my $chunk = <INPUTFILE>) {
+        chomp $chunk;
+        print "$count: $chunk";
+        $count++;
+        
+        my @header = $chunk =~ m'<head>(.*?)</head>'sg; #s means match multiple lines
+        print Dumper(@header);
+    }
+    close(INPUTFILE);
 
     print "Processing $file in $input_dir...\n";
 }
