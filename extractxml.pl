@@ -78,27 +78,55 @@ sub process_files {
 }
 
 sub process_file {
+
     my ($file, $input_dir) = @_;
-    
     my $filepath = "$input_dir/$file";
+
+    print "Processing $file in $input_dir...\n";
 
     print $filepath."\n";
 
     open(INPUTFILE, $filepath) || die("unable to open $filepath\n");
     #this magic variable means seprate each chunk by </entry>;
-    $/ = "</html>";
-    my $count = 0;
-    while(my $chunk = <INPUTFILE>) {
-        chomp $chunk;
-        print "$count: $chunk";
-        $count++;
-        
-        my @header = $chunk =~ m'<head>(.*?)</head>'sg; #s means match multiple lines
-        print Dumper(@header);
-    }
+    #$/ = "</html>";
+    undef $/;
+    my $content = <INPUTFILE>;
     close(INPUTFILE);
 
-    print "Processing $file in $input_dir...\n";
+    my $parser = new XML::Simple;
+    #ForceArray => 1 is an entry of hash, and it's can be passed into function as parameter
+    my $dom = $parser->XMLin($content, ForceArray => 1);
+    print Dumper($dom);
+
+    my $body = $dom->{"body"};
+=pod
+    $body is a reference to array, to get the element of the array from the reference
+    use $body->[index], and it's same as @$body[index]
+    but you can't use $body[index]
+=cut
+    print Dumper($body->[0]);
+
+    my @output;
+
+    my @skills;
+
+    push @skills, {
+        "name" => "javascript",
+        "time" => "3 years",
+    };
+    push @skills, {
+        "name" => "java",
+        "time" => "1 years",
+    };
+    push @output, {
+        "name" => "sean",
+        "job" => "developer",
+        "skills" => \@skills,
+    };
+    print " I have skill @output[0]->{'skills'}->[1]->{'name'}\n";
+    #print Dumper(@output[0]->{"skills"}->[1]->{"name"});
+
+    #print Dumper($dom->{"body"}->{"div"}->{"div"}[0]);
 }
 
 
